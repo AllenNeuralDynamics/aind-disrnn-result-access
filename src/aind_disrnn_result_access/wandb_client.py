@@ -306,7 +306,8 @@ class WandbClient:
         for artifact in run.logged_artifacts():
             if artifact.type != artifact_type:
                 continue
-            download_path = base_dir / artifact.name
+            safe_artifact_name = artifact.name.replace(":", "_")
+            download_path = base_dir / safe_artifact_name
 
             # Download all files or specific files
             if files is None:
