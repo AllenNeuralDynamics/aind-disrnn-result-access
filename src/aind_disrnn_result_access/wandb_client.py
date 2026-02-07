@@ -1,7 +1,7 @@
 """Client for accessing disRNN W&B run data and artifacts."""
 
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 import pandas as pd
 import wandb
@@ -220,7 +220,7 @@ class WandbClient:
         project: Optional[str] = None,
         keys: Optional[list[str]] = None,
         pandas: bool = True,
-    ) -> pd.DataFrame:
+    ) -> Union[pd.DataFrame, list[dict]]:
         """Get time-series history for a run.
 
         Parameters
@@ -235,18 +235,23 @@ class WandbClient:
             If None, gets all metrics.
         pandas : bool
             Return as pandas DataFrame. Default True.
+            If False, returns list of dicts.
 
         Returns
         -------
-        pd.DataFrame
-            Time-series metrics with columns like _step,
-            train/loss, valid/loss, etc. Always includes
-            _wall_time (elapsed seconds since training started).
+        pd.DataFrame or list[dict]
+            If pandas=True: DataFrame with time-series metrics,
+            columns like _step, train/loss, valid/loss, etc.
+            Always includes _wall_time (elapsed seconds since
+            training started).
+            If pandas=False: List of dicts, each dict representing
+            one step's logged data.
         """
         proj = self._resolve_project(project)
         run = self._api.run(self._run_path(run_id, proj))
 
-        # Always include _timestamp to calculate _wall_time when keys are specified.
+        # Always include _timestamp to calculate _wall_time when
+        # keys are specified.
         if keys is None:
             # Let W&B return all metrics (including _timestamp by default).
             history = run.history(keys=None, pandas=pandas)
