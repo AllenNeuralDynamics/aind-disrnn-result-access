@@ -410,9 +410,10 @@ class WandbClient:
         items = []
         for k, v in d.items():
             new_key = f"{parent_key}{sep}{k}" if parent_key else k
-            if isinstance(v, dict):
+            # Check for dict or dict-like objects (e.g., wandb.SummarySubDict)
+            if isinstance(v, dict) or hasattr(v, "items"):
                 items.extend(
-                    WandbClient._flatten_dict(v, new_key, sep=sep).items()
+                    WandbClient._flatten_dict(dict(v), new_key, sep=sep).items()
                 )
             else:
                 items.append((new_key, v))
