@@ -1,5 +1,6 @@
 """Client for accessing disRNN W&B run data and artifacts."""
 
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -37,7 +38,36 @@ class WandbClient:
         """
         self.entity = entity
         self.project = project
-        self._api = wandb.Api()
+        self._api = self._init_api()
+
+    @staticmethod
+    def _init_api() -> wandb.Api:
+        """Initialize the W&B API, checking for authentication.
+
+        Returns
+        -------
+        wandb.Api
+            Authenticated W&B API client.
+
+        Raises
+        ------
+        EnvironmentError
+            If WANDB_API_KEY is not set in the environment.
+        """
+        if not os.environ.get("WANDB_API_KEY"):
+            raise EnvironmentError(
+                "WANDB_API_KEY not found in environment.\n\n"
+                "To fix this, do one of the following:\n"
+                "  1. Set it in your shell:\n"
+                "       export WANDB_API_KEY=<your-key>\n\n"
+                "  2. Add it to a .env file in the project root:\n"
+                "       WANDB_API_KEY=<your-key>\n\n"
+                "  3. Run 'wandb login' to authenticate "
+                "interactively.\n\n"
+                "You can find your API key at: "
+                "https://wandb.ai/authorize"
+            )
+        return wandb.Api()
 
     def _resolve_project(self, project: Optional[str]) -> str:
         """Resolve the project name from argument or default.

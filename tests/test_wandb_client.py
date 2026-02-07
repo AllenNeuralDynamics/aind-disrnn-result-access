@@ -1,5 +1,6 @@
 """Tests for WandbClient."""
 
+import os
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -100,6 +101,30 @@ def _make_mock_artifact(
     return artifact
 
 
+class TestInitApi(unittest.TestCase):
+    """Tests for _init_api and WANDB_API_KEY validation."""
+
+    @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
+    @patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
+    def test_init_api_with_key(self, mock_api_cls):
+        """Test _init_api succeeds when WANDB_API_KEY is set."""
+        api = WandbClient._init_api()
+        mock_api_cls.assert_called_once()
+        self.assertEqual(api, mock_api_cls.return_value)
+
+    @patch.dict(os.environ, {}, clear=True)
+    def test_init_api_raises_without_key(self):
+        """Test _init_api raises EnvironmentError without key."""
+        with self.assertRaises(EnvironmentError) as ctx:
+            WandbClient._init_api()
+        msg = str(ctx.exception)
+        self.assertIn("WANDB_API_KEY", msg)
+        self.assertIn("export WANDB_API_KEY", msg)
+        self.assertIn("wandb login", msg)
+        self.assertIn("https://wandb.ai/authorize", msg)
+
+
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestWandbClientInit(unittest.TestCase):
     """Tests for WandbClient initialization."""
 
@@ -119,6 +144,7 @@ class TestWandbClientInit(unittest.TestCase):
         self.assertEqual(client.project, "my-project")
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestResolveProject(unittest.TestCase):
     """Tests for project resolution logic."""
 
@@ -144,6 +170,7 @@ class TestResolveProject(unittest.TestCase):
             client._resolve_project(None)
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestRunPath(unittest.TestCase):
     """Tests for run path construction."""
 
@@ -155,6 +182,7 @@ class TestRunPath(unittest.TestCase):
         self.assertEqual(path, "AIND-disRNN/test/abc123")
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestToRunInfo(unittest.TestCase):
     """Tests for converting W&B Run to RunInfo."""
 
@@ -188,6 +216,7 @@ class TestToRunInfo(unittest.TestCase):
         self.assertEqual(info.summary, {})
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestGetProjects(unittest.TestCase):
     """Tests for get_projects."""
 
@@ -220,6 +249,7 @@ class TestGetProjects(unittest.TestCase):
         self.assertEqual(projects, [])
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestGetRuns(unittest.TestCase):
     """Tests for get_runs."""
 
@@ -283,6 +313,7 @@ class TestGetRuns(unittest.TestCase):
             client.get_runs()
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestGetRun(unittest.TestCase):
     """Tests for get_run."""
 
@@ -308,6 +339,7 @@ class TestGetRun(unittest.TestCase):
         )
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestDownloadArtifact(unittest.TestCase):
     """Tests for download_artifact."""
 
@@ -384,6 +416,7 @@ class TestDownloadArtifact(unittest.TestCase):
         self.assertEqual(results, [])
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestDownloadArtifacts(unittest.TestCase):
     """Tests for download_artifacts (batch)."""
 
