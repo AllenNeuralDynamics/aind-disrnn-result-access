@@ -1,6 +1,5 @@
 """Client for accessing disRNN W&B run data and artifacts."""
 
-import os
 from pathlib import Path
 from typing import Optional
 
@@ -53,18 +52,19 @@ class WandbClient:
         Raises
         ------
         EnvironmentError
-            If WANDB_API_KEY is not set in the environment.
+            If no valid W&B authentication is found.
         """
-        if not os.environ.get("WANDB_API_KEY"):
+        api = wandb.Api()
+        if api.api_key is None:
             raise EnvironmentError(
-                "WANDB_API_KEY not found in environment.\n\n"
+                "No W&B authentication found.\n\n"
                 "To fix this, do one of the following:\n"
-                "  1. Set it in your shell:\n"
-                "       export WANDB_API_KEY=<your-key>\n\n"
-                "  2. Add it to a .env file in the project root:\n"
-                "       WANDB_API_KEY=<your-key>\n\n"
-                "  3. Run 'wandb login' to authenticate "
+                "  1. Run 'wandb login' to authenticate "
                 "interactively.\n\n"
+                "  2. Set it in your shell:\n"
+                "       export WANDB_API_KEY=<your-key>\n\n"
+                "  3. Add it to a .env file in the project root:\n"
+                "       WANDB_API_KEY=<your-key>\n\n"
                 "  4. If you are in Code Ocean, attach your "
                 "Weights & Biases\n"
                 "     API key as a secret to the capsule and set "
@@ -73,7 +73,7 @@ class WandbClient:
                 "You can find your API key at: "
                 "https://wandb.ai/authorize"
             )
-        return wandb.Api()
+        return api
 
     def _resolve_project(self, project: Optional[str]) -> str:
         """Resolve the project name from argument or default.
