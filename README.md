@@ -69,6 +69,24 @@ best_runs = df.nlargest(5, "summary.likelihood")
 print(df[["name", "config.model.lr", "summary.likelihood"]])
 ```
 
+### Get Time-Series History
+
+```python
+# Get time-series metrics (e.g., train/loss over training steps)
+history = client.get_run_history("abc123", project="test")
+print(history[["_step", "train/loss", "valid/loss"]])
+
+# Get only specific metrics
+history = client.get_run_history(
+    "abc123",
+    project="test",
+    keys=["train/loss", "valid/loss"],
+)
+
+# Plot training curves
+history.plot(x="_step", y=["train/loss", "valid/loss"])
+```
+
 ### Download Artifacts
 
 ```python

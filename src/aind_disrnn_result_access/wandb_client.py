@@ -213,6 +213,38 @@ class WandbClient:
         run = self._api.run(self._run_path(run_id, proj))
         return self._to_run_info(run)
 
+    def get_run_history(
+        self,
+        run_id: str,
+        project: Optional[str] = None,
+        keys: Optional[list[str]] = None,
+        pandas: bool = True,
+    ) -> pd.DataFrame:
+        """Get time-series history for a run.
+
+        Parameters
+        ----------
+        run_id : str
+            The W&B run ID.
+        project : str, optional
+            Project name. Falls back to self.project.
+        keys : list[str], optional
+            Specific metric keys to retrieve (e.g., ['train/loss', 'valid/loss']).
+            If None, gets all metrics.
+        pandas : bool
+            Return as pandas DataFrame. Default True.
+
+        Returns
+        -------
+        pd.DataFrame
+            Time-series metrics with columns like _step, train/loss, valid/loss, etc.
+        """
+        proj = self._resolve_project(project)
+        run = self._api.run(self._run_path(run_id, proj))
+
+        history = run.history(keys=keys or [], pandas=pandas)
+        return history
+
     def download_artifact(
         self,
         run_id: str,
