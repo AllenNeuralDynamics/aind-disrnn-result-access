@@ -256,7 +256,7 @@ class WandbClient:
                 keys_with_timestamp.append("_timestamp")
             history = run.history(keys=keys_with_timestamp, pandas=pandas)
         # Add _wall_time column (elapsed seconds since first record)
-        if pandas and "_timestamp" in history.columns:
+        if pandas and not history.empty and "_timestamp" in history.columns:
             first_timestamp = history["_timestamp"].iloc[0]
             history["_wall_time"] = history["_timestamp"] - first_timestamp
 
