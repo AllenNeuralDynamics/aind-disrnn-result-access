@@ -64,6 +64,11 @@ class WandbClient:
                 "       WANDB_API_KEY=<your-key>\n\n"
                 "  3. Run 'wandb login' to authenticate "
                 "interactively.\n\n"
+                "  4. If you are in Code Ocean, attach your "
+                "Weights & Biases\n"
+                "     API key as a secret to the capsule and set "
+                "the environment\n"
+                "     variable name to WANDB_API_KEY.\n\n"
                 "You can find your API key at: "
                 "https://wandb.ai/authorize"
             )

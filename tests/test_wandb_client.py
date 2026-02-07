@@ -121,6 +121,7 @@ class TestInitApi(unittest.TestCase):
         self.assertIn("WANDB_API_KEY", msg)
         self.assertIn("export WANDB_API_KEY", msg)
         self.assertIn("wandb login", msg)
+        self.assertIn("Code Ocean", msg)
         self.assertIn("https://wandb.ai/authorize", msg)
 
 
