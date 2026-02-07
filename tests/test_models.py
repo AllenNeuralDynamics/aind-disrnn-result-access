@@ -84,9 +84,7 @@ class TestArtifactInfo(unittest.TestCase):
             run_id="abc123",
             files=["params.json", "output_summary.csv"],
         )
-        self.assertEqual(
-            artifact.files, ["params.json", "output_summary.csv"]
-        )
+        self.assertEqual(artifact.files, ["params.json", "output_summary.csv"])
 
     def test_default_files_are_independent(self):
         """Test that default files list is independent across instances."""

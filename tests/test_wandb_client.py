@@ -205,8 +205,9 @@ class TestGetProjects(unittest.TestCase):
 
         client = WandbClient()
         projects = client.get_projects()
-        self.assertEqual(projects, ["test", "han_mice_disrnn",
-                                    "han_cpu_gpu_test"])
+        self.assertEqual(
+            projects, ["test", "han_mice_disrnn", "han_cpu_gpu_test"]
+        )
         mock_api.projects.assert_called_once_with(entity="AIND-disRNN")
 
     @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
@@ -331,9 +332,7 @@ class TestDownloadArtifact(unittest.TestCase):
         )
         expected_path = Path("./artifacts/abc123/disrnn-output-abc123")
         self.assertEqual(results[0].download_path, expected_path)
-        mock_artifact.download.assert_called_once_with(
-            root=str(expected_path)
-        )
+        mock_artifact.download.assert_called_once_with(root=str(expected_path))
 
     @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
     def test_filters_by_artifact_type(self, mock_api_cls):
@@ -370,9 +369,7 @@ class TestDownloadArtifact(unittest.TestCase):
 
         expected_path = Path("/tmp/my-output/disrnn-output-abc123")
         self.assertEqual(results[0].download_path, expected_path)
-        mock_artifact.download.assert_called_once_with(
-            root=str(expected_path)
-        )
+        mock_artifact.download.assert_called_once_with(root=str(expected_path))
 
     @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
     def test_no_matching_artifacts(self, mock_api_cls):
