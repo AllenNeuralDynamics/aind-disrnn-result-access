@@ -74,7 +74,8 @@ print(df[["name", "config.model.lr", "summary.likelihood"]])
 ```python
 # Get time-series metrics (e.g., train/loss over training steps)
 history = client.get_run_history("abc123", project="test")
-print(history[["_step", "train/loss", "valid/loss"]])
+# Returns DataFrame with _step, _wall_time (elapsed seconds), and metrics
+print(history[["_step", "_wall_time", "train/loss", "valid/loss"]])
 
 # Get only specific metrics
 history = client.get_run_history(
@@ -83,8 +84,8 @@ history = client.get_run_history(
     keys=["train/loss", "valid/loss"],
 )
 
-# Plot training curves
-history.plot(x="_step", y=["train/loss", "valid/loss"])
+# Plot training curves vs wall time
+history.plot(x="_wall_time", y=["train/loss", "valid/loss"])
 ```
 
 ### Download Artifacts
