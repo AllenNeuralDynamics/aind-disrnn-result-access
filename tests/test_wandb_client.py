@@ -363,7 +363,9 @@ class TestDownloadArtifact(unittest.TestCase):
         self.assertEqual(
             results[0].files, ["params.json", "output_summary.csv"]
         )
-        expected_path = Path("/root/capsule/data/disrnn-output-abc123")
+        expected_path = Path(
+            "/root/capsule/results/downloaded_artifacts/disrnn-output-abc123"
+        )
         self.assertEqual(results[0].download_path, expected_path)
         mock_artifact.download.assert_called_once_with(root=str(expected_path))
 
