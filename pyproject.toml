@@ -34,6 +34,19 @@ dev = [
     "pytest>=9.0.2",
 ]
 
+[dependency-groups]
+dev = [
+    'black',
+    'coverage',
+    'flake8',
+    'interrogate',
+    'isort',
+    'matplotlib',
+    'Sphinx',
+    'furo',
+    "pytest>=9.0.2",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
