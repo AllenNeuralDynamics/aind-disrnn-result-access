@@ -112,8 +112,11 @@ class TestInitApi(unittest.TestCase):
         mock_api_cls.assert_called_once()
         self.assertEqual(api, mock_api_cls.return_value)
 
-    @patch.dict(os.environ, {}, clear=True)
-    def test_init_api_raises_without_key(self):
+    @patch(
+        "aind_disrnn_result_access.wandb_client.wandb.Api",
+        side_effect=Exception("No API key"),
+    )
+    def test_init_api_raises_without_key(self, mock_api_cls):
         """Test _init_api raises EnvironmentError without key."""
         with self.assertRaises(EnvironmentError) as ctx:
             WandbClient._init_api()

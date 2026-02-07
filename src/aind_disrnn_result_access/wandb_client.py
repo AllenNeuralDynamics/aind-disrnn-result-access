@@ -54,8 +54,9 @@ class WandbClient:
         EnvironmentError
             If no valid W&B authentication is found.
         """
-        api = wandb.Api()
-        if api.api_key is None:
+        try:
+            return wandb.Api()
+        except Exception:
             raise EnvironmentError(
                 "No W&B authentication found.\n\n"
                 "To fix this, do one of the following:\n"
@@ -63,17 +64,17 @@ class WandbClient:
                 "interactively.\n\n"
                 "  2. Set it in your shell:\n"
                 "       export WANDB_API_KEY=<your-key>\n\n"
-                "  3. Add it to a .env file in the project root:\n"
+                "  3. Add it to a .env file in the "
+                "project root:\n"
                 "       WANDB_API_KEY=<your-key>\n\n"
-                "  4. If you are in Code Ocean, attach your "
-                "Weights & Biases\n"
-                "     API key as a secret to the capsule and set "
-                "the environment\n"
+                "  4. If you are in Code Ocean, attach "
+                "your Weights & Biases\n"
+                "     API key as a secret to the capsule "
+                "and set the environment\n"
                 "     variable name to WANDB_API_KEY.\n\n"
                 "You can find your API key at: "
                 "https://wandb.ai/authorize"
             )
-        return api
 
     def _resolve_project(self, project: Optional[str]) -> str:
         """Resolve the project name from argument or default.
