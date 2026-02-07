@@ -246,13 +246,15 @@ class WandbClient:
         proj = self._resolve_project(project)
         run = self._api.run(self._run_path(run_id, proj))
 
-        # Always include _timestamp to calculate _wall_time
-        keys_with_timestamp = list(keys or [])
-        if keys_with_timestamp and "_timestamp" not in keys_with_timestamp:
-            keys_with_timestamp.append("_timestamp")
-
-        history = run.history(keys=keys_with_timestamp or [], pandas=pandas)
-
+        # Always include _timestamp to calculate _wall_time when keys are specified.
+        if keys is None:
+            # Let W&B return all metrics (including _timestamp by default).
+            history = run.history(keys=None, pandas=pandas)
+        else:
+            keys_with_timestamp = list(keys)
+            if "_timestamp" not in keys_with_timestamp:
+                keys_with_timestamp.append("_timestamp")
+            history = run.history(keys=keys_with_timestamp, pandas=pandas)
         # Add _wall_time column (elapsed seconds since first record)
         if pandas and "_timestamp" in history.columns:
             first_timestamp = history["_timestamp"].iloc[0]
