@@ -21,13 +21,14 @@ dependencies = [
     "wandb>=0.24.2",
 ]
 
-[dependency-groups]
+[project.optional-dependencies]
 dev = [
     'black',
     'coverage',
     'flake8',
     'interrogate',
     'isort',
+    'matplotlib',
     'Sphinx',
     'furo',
     "pytest>=9.0.2",

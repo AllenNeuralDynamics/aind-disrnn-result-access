@@ -40,11 +40,33 @@ finished = client.get_runs(
     filters={"state": "finished"},
 )
 
+# Control sorting and pagination
+recent_runs = client.get_runs(
+    project="han_mice_disrnn",
+    order="-created_at",  # most recent first
+    per_page=100,
+)
+
 # Get a specific run by ID
 run = client.get_run("abc123", project="test")
 print(run.config)   # training configuration
 print(run.summary)  # final metrics
 print(run.tags)     # run tags
+```
+
+### Get Runs as DataFrame
+
+```python
+# Get runs as a pandas DataFrame (similar to W&B web UI table)
+# Config and summary values are flattened with dot notation
+df = client.get_runs_dataframe(project="han_mice_disrnn")
+
+# Filter and sort DataFrame
+finished_df = df[df["state"] == "finished"]
+best_runs = df.nlargest(5, "summary.likelihood")
+
+# Access nested config values
+print(df[["name", "config.model.lr", "summary.likelihood"]])
 ```
 
 ### Download Artifacts
@@ -55,6 +77,20 @@ artifacts = client.download_artifact("abc123", project="test")
 for art in artifacts:
     print(art.download_path)  # local path to downloaded files
     print(art.files)          # list of file names
+
+# Download specific artifact type
+artifacts = client.download_artifact(
+    "abc123",
+    project="test",
+    artifact_type="training-output",
+)
+
+# Download only specific files from artifacts
+artifacts = client.download_artifact(
+    "abc123",
+    project="test",
+    files=["model_params.pkl", "training_curves.csv"],
+)
 
 # Batch download for multiple runs
 all_artifacts = client.download_artifacts(
@@ -95,11 +131,10 @@ pip install -e .
 
 To develop the code, run
 ```bash
-pip install -e . --group dev
+pip install -e .[dev]
 ```
-Note: --group flag is available only in pip versions >=25.1
 
 Alternatively, if using `uv`, run
 ```bash
-uv sync
+uv sync --all-extras
 ```
