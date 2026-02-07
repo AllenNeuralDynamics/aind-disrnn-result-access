@@ -363,9 +363,7 @@ class TestDownloadArtifact(unittest.TestCase):
         self.assertEqual(
             results[0].files, ["params.json", "output_summary.csv"]
         )
-        expected_path = Path(
-            "/root/capsule/data/abc123/disrnn-output-abc123"
-        )
+        expected_path = Path("/root/capsule/data/disrnn-output-abc123")
         self.assertEqual(results[0].download_path, expected_path)
         mock_artifact.download.assert_called_once_with(root=str(expected_path))
 
@@ -390,7 +388,7 @@ class TestDownloadArtifact(unittest.TestCase):
 
     @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
     def test_custom_output_dir(self, mock_api_cls):
-        """Test custom output_dir is used as base with run_id appended."""
+        """Test that custom output_dir is used directly."""
         mock_api = mock_api_cls.return_value
         mock_run = _make_mock_run()
         mock_artifact = _make_mock_artifact()
@@ -402,7 +400,7 @@ class TestDownloadArtifact(unittest.TestCase):
             "abc123", output_dir="/tmp/my-output"
         )
 
-        expected_path = Path("/tmp/my-output/abc123/disrnn-output-abc123")
+        expected_path = Path("/tmp/my-output/disrnn-output-abc123")
         self.assertEqual(results[0].download_path, expected_path)
         mock_artifact.download.assert_called_once_with(root=str(expected_path))
 

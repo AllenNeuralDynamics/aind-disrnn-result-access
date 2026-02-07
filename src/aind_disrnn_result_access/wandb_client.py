@@ -229,10 +229,9 @@ class WandbClient:
         project : str, optional
             Project name. Falls back to self.project.
         output_dir : str, optional
-            Base directory for downloads. The run_id will be automatically
-            appended to create the final path. Defaults to
-            '/root/capsule/data', resulting in
-            '/root/capsule/data/<run_id>'.
+            Directory to download artifacts into. Artifacts are downloaded
+            to '<output_dir>/<artifact_name>'. Defaults to '/root/capsule/data'.
+            Note: artifact names typically contain the run_id.
         artifact_type : str
             Artifact type filter. Default is 'training-output'.
         files : list[str], optional
@@ -248,7 +247,6 @@ class WandbClient:
         proj = self._resolve_project(project)
         run = self._api.run(self._run_path(run_id, proj))
         base_dir = Path(output_dir or "/root/capsule/data")
-        base_dir = base_dir / run_id
 
         results = []
         for artifact in run.logged_artifacts():
@@ -302,8 +300,7 @@ class WandbClient:
         project : str, optional
             Project name. Falls back to self.project.
         output_dir : str, optional
-            Base directory for downloads. Each run gets a subdirectory.
-            Defaults to '/root/capsule/data'.
+            Directory to download artifacts into. Defaults to '/root/capsule/data'.
         artifact_type : str
             Artifact type filter. Default is 'training-output'.
         files : list[str], optional
