@@ -218,6 +218,7 @@ class WandbClient:
         project: Optional[str] = None,
         output_dir: Optional[str] = None,
         artifact_type: str = "training-output",
+        files: Optional[list[str]] = None,
     ) -> list[ArtifactInfo]:
         """Download training output artifacts for a given run.
 
@@ -234,6 +235,10 @@ class WandbClient:
             '/root/capsule/results/artifacts/<run_id>'.
         artifact_type : str
             Artifact type filter. Default is 'training-output'.
+        files : list[str], optional
+            List of specific files to download from each artifact.
+            If None (default), downloads all files. Uses W&B's path_prefix
+            parameter to filter files by name pattern.
 
         Returns
         -------
@@ -250,8 +255,24 @@ class WandbClient:
             if artifact.type != artifact_type:
                 continue
             download_path = base_dir / artifact.name
-            artifact.download(root=str(download_path))
-            files = [f.name for f in artifact.files()]
+
+            # Download all files or specific files
+            if files is None:
+                artifact.download(root=str(download_path))
+                downloaded_files = [f.name for f in artifact.files()]
+            else:
+                # Download each specified file individually
+                downloaded_files = []
+                for file_pattern in files:
+                    # Use get_entry to download specific files
+                    try:
+                        entry = artifact.get_entry(file_pattern)
+                        entry.download(root=str(download_path))
+                        downloaded_files.append(file_pattern)
+                    except KeyError:
+                        # File not found in artifact, skip
+                        pass
+
             results.append(
                 ArtifactInfo(
                     name=artifact.name,
@@ -259,7 +280,7 @@ class WandbClient:
                     version=artifact.version,
                     download_path=download_path,
                     run_id=run_id,
-                    files=files,
+                    files=downloaded_files,
                 )
             )
         return results
@@ -270,6 +291,7 @@ class WandbClient:
         project: Optional[str] = None,
         output_dir: Optional[str] = None,
         artifact_type: str = "training-output",
+        files: Optional[list[str]] = None,
     ) -> dict[str, list[ArtifactInfo]]:
         """Batch download artifacts for multiple runs.
 
@@ -284,6 +306,9 @@ class WandbClient:
             Defaults to '/root/capsule/results/artifacts'.
         artifact_type : str
             Artifact type filter. Default is 'training-output'.
+        files : list[str], optional
+            List of specific files to download from each artifact.
+            If None (default), downloads all files.
 
         Returns
         -------
@@ -297,5 +322,6 @@ class WandbClient:
                 project=project,
                 output_dir=output_dir,
                 artifact_type=artifact_type,
+                files=files,
             )
         return results

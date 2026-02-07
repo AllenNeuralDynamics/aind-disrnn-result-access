@@ -418,6 +418,55 @@ class TestDownloadArtifact(unittest.TestCase):
         results = client.download_artifact("abc123")
         self.assertEqual(results, [])
 
+    @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
+    def test_download_specific_files(self, mock_api_cls):
+        """Test downloading only specific files from artifact."""
+        mock_api = mock_api_cls.return_value
+        mock_run = _make_mock_run()
+        mock_artifact = _make_mock_artifact()
+
+        # Mock get_entry for specific file
+        mock_entry = MagicMock()
+        mock_artifact.get_entry.return_value = mock_entry
+
+        mock_run.logged_artifacts.return_value = [mock_artifact]
+        mock_api.run.return_value = mock_run
+
+        client = WandbClient(project="test")
+        results = client.download_artifact("abc123", files=["params.json"])
+
+        self.assertEqual(len(results), 1)
+        # Only the requested file should be in the list
+        self.assertEqual(results[0].files, ["params.json"])
+        # get_entry should be called for the specific file
+        mock_artifact.get_entry.assert_called_once_with("params.json")
+        # download() should NOT be called (we use entry.download instead)
+        mock_artifact.download.assert_not_called()
+        # entry.download should be called
+        mock_entry.download.assert_called_once()
+
+    @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
+    def test_download_specific_files_not_found(self, mock_api_cls):
+        """Test downloading files that don't exist is handled gracefully."""
+        mock_api = mock_api_cls.return_value
+        mock_run = _make_mock_run()
+        mock_artifact = _make_mock_artifact()
+
+        # Simulate file not found
+        mock_artifact.get_entry.side_effect = KeyError("File not found")
+
+        mock_run.logged_artifacts.return_value = [mock_artifact]
+        mock_api.run.return_value = mock_run
+
+        client = WandbClient(project="test")
+        results = client.download_artifact(
+            "abc123", files=["nonexistent.json"]
+        )
+
+        self.assertEqual(len(results), 1)
+        # No files should be downloaded
+        self.assertEqual(results[0].files, [])
+
 
 @patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
 class TestDownloadArtifacts(unittest.TestCase):
