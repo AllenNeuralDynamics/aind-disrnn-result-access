@@ -8,12 +8,71 @@
 ![Python](https://img.shields.io/badge/python->=3.10-blue?logo=python)
 
 ## Usage
- - To use this template, click the green `Use this template` button and `Create new repository`.
- - After github initially creates the new repository, please wait an extra minute for the initialization scripts to finish organizing the repo.
- - To enable the automatic semantic version increments: in the repository go to `Settings` and `Collaborators and teams`. Click the green `Add people` button. Add `svc-aindscicomp` as an admin. Modify the file in `.github/workflows/tag_and_publish.yml` and remove the if statement in line 65. The semantic version will now be incremented every time a code is committed into the main branch.
- - To publish to PyPI, enable semantic versioning and uncomment the publish block in `.github/workflows/tag_and_publish.yml`. The code will now be published to PyPI every time the code is committed into the main branch.
- - The `.github/workflows/test_and_lint.yml` file will run automated tests and style checks every time a Pull Request is opened. If the checks are undesired, the `test_and_lint.yml` can be deleted. The strictness of the code coverage level, etc., can be modified by altering the configurations in the `pyproject.toml` file and the `.flake8` file.
- - Please make any necessary updates to the README.md and CITATION.cff files
+
+This package provides a Python API for accessing disRNN training results
+stored in Weights & Biases (W&B). Make sure you are authenticated with W&B
+(`wandb login`) before using the client.
+
+### Quick Start
+
+```python
+from aind_disrnn_result_access import WandbClient
+
+# Initialize client (defaults to entity="AIND-disRNN")
+client = WandbClient()
+
+# List available projects
+projects = client.get_projects()
+# e.g. ["test", "han_mice_disrnn", "han_cpu_gpu_test"]
+```
+
+### Browse Run Metadata
+
+```python
+# List runs in a project
+runs = client.get_runs(project="han_mice_disrnn")
+for run in runs:
+    print(run.name, run.state, run.summary.get("likelihood"))
+
+# Filter runs (uses MongoDB-style queries)
+finished = client.get_runs(
+    project="han_mice_disrnn",
+    filters={"state": "finished"},
+)
+
+# Get a specific run by ID
+run = client.get_run("abc123", project="test")
+print(run.config)   # training configuration
+print(run.summary)  # final metrics
+print(run.tags)     # run tags
+```
+
+### Download Artifacts
+
+```python
+# Download training outputs (params, plots, CSVs) for a single run
+artifacts = client.download_artifact("abc123", project="test")
+for art in artifacts:
+    print(art.download_path)  # local path to downloaded files
+    print(art.files)          # list of file names
+
+# Batch download for multiple runs
+all_artifacts = client.download_artifacts(
+    ["run1", "run2", "run3"],
+    project="han_mice_disrnn",
+    output_dir="./my_artifacts",
+)
+```
+
+### Set a Default Project
+
+```python
+# Avoid passing project= on every call
+client = WandbClient(project="han_mice_disrnn")
+runs = client.get_runs()  # uses default project
+```
+
+See `notebook/example_usage.ipynb` for a full interactive walkthrough.
 
 ## Level of Support
 Please indicate a level of support:
