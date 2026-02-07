@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+import pandas as pd
 import wandb
 
 from aind_disrnn_result_access.models import ArtifactInfo, RunInfo
@@ -324,3 +325,95 @@ class WandbClient:
                 files=files,
             )
         return results
+
+    def get_runs_dataframe(
+        self,
+        project: Optional[str] = None,
+        filters: Optional[dict] = None,
+        order: str = "-created_at",
+        per_page: int = 50,
+    ) -> pd.DataFrame:
+        """Get runs as a pandas DataFrame similar to W&B web UI table.
+
+        Flattens nested config and summary dictionaries into columns with
+        dot notation (e.g., 'config.model.lr', 'summary.likelihood').
+
+        Parameters
+        ----------
+        project : str, optional
+            Project name. Falls back to self.project.
+        filters : dict, optional
+            W&B run filters (MongoDB-style query).
+        order : str
+            Sort order. Default is most recent first.
+        per_page : int
+            Number of runs per page.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with columns for run metadata, config, and summary.
+            Each row represents one run.
+        """
+        runs = self.get_runs(
+            project=project,
+            filters=filters,
+            order=order,
+            per_page=per_page,
+        )
+
+        if not runs:
+            return pd.DataFrame()
+
+        # Build list of dicts for DataFrame
+        rows = []
+        for run in runs:
+            row = {
+                "id": run.id,
+                "name": run.name,
+                "state": run.state,
+                "created_at": run.created_at,
+                "url": run.url,
+                "tags": ",".join(run.tags),
+            }
+
+            # Flatten config with prefix
+            for key, value in self._flatten_dict(run.config).items():
+                row[f"config.{key}"] = value
+
+            # Flatten summary with prefix
+            for key, value in self._flatten_dict(run.summary).items():
+                row[f"summary.{key}"] = value
+
+            rows.append(row)
+
+        return pd.DataFrame(rows)
+
+    @staticmethod
+    def _flatten_dict(d: dict, parent_key: str = "", sep: str = ".") -> dict:
+        """Flatten a nested dictionary with dot notation.
+
+        Parameters
+        ----------
+        d : dict
+            Dictionary to flatten.
+        parent_key : str
+            Prefix for keys (used in recursion).
+        sep : str
+            Separator for nested keys.
+
+        Returns
+        -------
+        dict
+            Flattened dictionary.
+        """
+        items = []
+        for k, v in d.items():
+            new_key = f"{parent_key}{sep}{k}" if parent_key else k
+            if isinstance(v, dict):
+                items.extend(
+                    WandbClient._flatten_dict(v, new_key, sep=sep).items()
+                )
+            else:
+                items.append((new_key, v))
+        return dict(items)

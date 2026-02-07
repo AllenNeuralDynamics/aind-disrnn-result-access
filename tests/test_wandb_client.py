@@ -505,5 +505,90 @@ class TestDownloadArtifacts(unittest.TestCase):
         self.assertEqual(results, {})
 
 
+@patch.dict(os.environ, {"WANDB_API_KEY": "test-key"})
+class TestGetRunsDataframe(unittest.TestCase):
+    """Tests for get_runs_dataframe."""
+
+    @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
+    def test_returns_dataframe(self, mock_api_cls):
+        """Test that runs are returned as a pandas DataFrame."""
+        mock_api = mock_api_cls.return_value
+        mock_api.runs.return_value = [
+            _make_mock_run(
+                run_id="r1",
+                name="run-1",
+                config={"lr": 0.001, "model": {"type": "disrnn"}},
+                summary={"loss": 0.5, "final": {"val_loss": 0.45}},
+            ),
+            _make_mock_run(
+                run_id="r2",
+                name="run-2",
+                config={"lr": 0.01, "model": {"type": "baseline"}},
+                summary={"loss": 0.6, "final": {"val_loss": 0.55}},
+            ),
+        ]
+        client = WandbClient(project="test")
+        df = client.get_runs_dataframe()
+
+        # Check DataFrame shape and basic columns
+        self.assertEqual(len(df), 2)
+        self.assertIn("id", df.columns)
+        self.assertIn("name", df.columns)
+        self.assertIn("state", df.columns)
+
+        # Check flattened config columns
+        self.assertIn("config.lr", df.columns)
+        self.assertIn("config.model.type", df.columns)
+        self.assertEqual(df.iloc[0]["config.lr"], 0.001)
+        self.assertEqual(df.iloc[0]["config.model.type"], "disrnn")
+
+        # Check flattened summary columns
+        self.assertIn("summary.loss", df.columns)
+        self.assertIn("summary.final.val_loss", df.columns)
+        self.assertEqual(df.iloc[0]["summary.loss"], 0.5)
+        self.assertEqual(df.iloc[0]["summary.final.val_loss"], 0.45)
+
+    @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
+    def test_empty_runs(self, mock_api_cls):
+        """Test that empty DataFrame is returned when no runs found."""
+        mock_api = mock_api_cls.return_value
+        mock_api.runs.return_value = []
+        client = WandbClient(project="test")
+        df = client.get_runs_dataframe()
+        self.assertTrue(df.empty)
+
+    @patch("aind_disrnn_result_access.wandb_client.wandb.Api")
+    def test_tags_joined(self, mock_api_cls):
+        """Test that tags are joined as comma-separated string."""
+        mock_api = mock_api_cls.return_value
+        mock_api.runs.return_value = [
+            _make_mock_run(tags=["tag1", "tag2", "tag3"]),
+        ]
+        client = WandbClient(project="test")
+        df = client.get_runs_dataframe()
+        self.assertEqual(df.iloc[0]["tags"], "tag1,tag2,tag3")
+
+
+class TestFlattenDict(unittest.TestCase):
+    """Tests for _flatten_dict helper."""
+
+    def test_flat_dict(self):
+        """Test flattening an already flat dict."""
+        d = {"a": 1, "b": 2}
+        result = WandbClient._flatten_dict(d)
+        self.assertEqual(result, {"a": 1, "b": 2})
+
+    def test_nested_dict(self):
+        """Test flattening a nested dict."""
+        d = {"a": 1, "b": {"c": 2, "d": {"e": 3}}}
+        result = WandbClient._flatten_dict(d)
+        self.assertEqual(result, {"a": 1, "b.c": 2, "b.d.e": 3})
+
+    def test_empty_dict(self):
+        """Test flattening an empty dict."""
+        result = WandbClient._flatten_dict({})
+        self.assertEqual(result, {})
+
+
 if __name__ == "__main__":
     unittest.main()
