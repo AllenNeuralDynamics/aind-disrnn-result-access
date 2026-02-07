@@ -7,6 +7,10 @@
 ![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 ![Python](https://img.shields.io/badge/python->=3.10-blue?logo=python)
 
+This repo is part of the [aind-disrnn-pipeline](https://github.com/AllenNeuralDynamics/aind-disrnn-pipeline) project, providing post-hoc access to training results stored in W&B.
+
+<img width="1291" alt="disRNN pipeline workflow" src="docs/images/disrnn_pipeline_workflow.png" />
+
 ## Usage
 
 This package provides a Python API for accessing disRNN training results
