@@ -17,6 +17,7 @@ readme = "README.md"
 dynamic = ["version"]
 
 dependencies = [
+    "wandb>=0.24.2",
 ]
 
 [dependency-groups]
@@ -27,7 +28,8 @@ dev = [
     'interrogate',
     'isort',
     'Sphinx',
-    'furo'
+    'furo',
+    "pytest>=9.0.2",
 ]
 
 [tool.setuptools.packages.find]
