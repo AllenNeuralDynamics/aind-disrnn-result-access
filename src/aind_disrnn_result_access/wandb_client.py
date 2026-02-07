@@ -286,9 +286,11 @@ class WandbClient:
         artifact_type : str
             Artifact type filter. Default is 'training-output'.
         files : list[str], optional
-            List of specific files to download from each artifact.
-            If None (default), downloads all files. Uses W&B's path_prefix
-            parameter to filter files by name pattern.
+            List of specific files (exact artifact-relative paths) to
+            download from each artifact. If None (default), downloads
+            all files. When provided, only files matching the given
+            names are downloaded; no pattern or prefix-based filtering
+            is performed.
 
         Returns
         -------
