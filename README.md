@@ -150,10 +150,11 @@ pip install -e .
 
 To develop the code, run
 ```bash
-pip install -e .[dev]
+pip install -e . --group dev
 ```
+Note: --group flag is available only in pip versions >=25.1
 
 Alternatively, if using `uv`, run
 ```bash
-uv sync --all-extras
+uv sync
 ```
