@@ -229,7 +229,8 @@ class WandbClient:
         project : str, optional
             Project name. Falls back to self.project.
         keys : list[str], optional
-            Specific metric keys to retrieve (e.g., ['train/loss', 'valid/loss']).
+            Specific metric keys to retrieve
+            (e.g., ['train/loss', 'valid/loss']).
             If None, gets all metrics.
         pandas : bool
             Return as pandas DataFrame. Default True.
@@ -237,8 +238,9 @@ class WandbClient:
         Returns
         -------
         pd.DataFrame
-            Time-series metrics with columns like _step, train/loss, valid/loss, etc.
-            Always includes _wall_time (elapsed seconds since training started).
+            Time-series metrics with columns like _step,
+            train/loss, valid/loss, etc. Always includes
+            _wall_time (elapsed seconds since training started).
         """
         proj = self._resolve_project(project)
         run = self._api.run(self._run_path(run_id, proj))
@@ -292,7 +294,8 @@ class WandbClient:
         """
         proj = self._resolve_project(project)
         run = self._api.run(self._run_path(run_id, proj))
-        base_dir = Path(output_dir or "/root/capsule/results/downloaded_artifacts")
+        default_dir = "/root/capsule/results/downloaded_artifacts"
+        base_dir = Path(output_dir or default_dir)
 
         results = []
         for artifact in run.logged_artifacts():
@@ -457,7 +460,9 @@ class WandbClient:
             # Check for dict or dict-like objects (e.g., wandb.SummarySubDict)
             if isinstance(v, dict) or hasattr(v, "items"):
                 items.extend(
-                    WandbClient._flatten_dict(dict(v), new_key, sep=sep).items()
+                    WandbClient._flatten_dict(
+                        dict(v), new_key, sep=sep
+                    ).items()
                 )
             else:
                 items.append((new_key, v))
