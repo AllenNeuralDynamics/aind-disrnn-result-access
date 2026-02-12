@@ -1,6 +1,6 @@
 """Init package."""
 
-__version__ = "0.0.0"
+__version__ = "0.1.0"
 
 from aind_disrnn_result_access.models import (  # noqa: F401
     ArtifactInfo,
